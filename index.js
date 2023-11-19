@@ -1,22 +1,17 @@
 const express = require('express')
-// const serverless = require('serverless-http')
 const app = express()
-const router = express.Router();
+// const router = express.Router();
 const fs = require('fs')
 const bodyParser = require('body-parser')
 app.use(bodyParser.json())
-app.use(express.static('../dist'))
+// app.use(express.static('../dist'))
 const port = 3000
 const path = require('path');
-const exp = require('constants');
 const dataPath = './employees.json';
 
 const morgan = require('morgan');
 const cors = require('cors');
 app.use(cors())
-// app.use(cors({
-//     origin: 'http://localhost:3000',
-//   }));
 app.use(morgan('dev'));
 
 const corsOptions = {
@@ -86,7 +81,7 @@ function criteriaSearch(key,value) {
     }
 }
 
-router.get('/filterCriteria', async(req,res)=>{
+app.get('/filterCriteria', async(req,res)=>{
     console.log(req.query);
     let key = req.query.key;
     let value = req.query.value;
@@ -98,20 +93,20 @@ router.get('/filterCriteria', async(req,res)=>{
     res.status(200).send(newEmpData);
 })
 
-// router.get('/', (req,res)=>{
+// app.get('/', (req,res)=>{
 //     res.send("app running...")
 // })
 
-router.get('/index', (req,res)=>{
+app.get('/index', (req,res)=>{
     res.sendFile(path.join(__dirname, 'index.html'))
 })
 
-router.get('/employees', async(req,res)=>{
+app.get('/employees', async(req,res)=>{
     let employeeData = readData()
     res.status(200).send(employeeData);
 })
 
-router.get('/employee', async(req,res)=>{
+app.get('/employee', async(req,res)=>{
     const EmpId = req.query.id;
     let employeeData = readData()
     let newEmployeeData = [];
@@ -125,7 +120,7 @@ router.get('/employee', async(req,res)=>{
 
 })
 
-router.post('/addEmployee', async(req,res)=>{
+app.post('/addEmployee', async(req,res)=>{
 
     userData = req.body
     console.log(userData)
@@ -151,7 +146,7 @@ router.post('/addEmployee', async(req,res)=>{
 
 })
 
-router.put('/editEmployee/:id', async(req,res)=>{
+app.put('/editEmployee/:id', async(req,res)=>{
 
     const updateData = req.body;
     const updates = Object.keys(updateData)
@@ -183,7 +178,7 @@ router.put('/editEmployee/:id', async(req,res)=>{
         res.status(404).send({message : "Employee not found"})
 })
 
-router.delete('/deleteEmployee/:id', async(req,res)=>{
+app.delete('/deleteEmployee/:id', async(req,res)=>{
     const id = req.params.id;
     let employeeData = readData()
     let index = employeeData.findIndex(emp => emp.id === parseInt(id));
@@ -199,7 +194,7 @@ router.delete('/deleteEmployee/:id', async(req,res)=>{
 
 ////////////////bonus APIS///////////////////
 
-router.get('/averageSalary', async(req,res)=>{
+app.get('/averageSalary', async(req,res)=>{
     let employeeData = readData();
     let total = 0;
     let count = 0;
@@ -210,7 +205,7 @@ router.get('/averageSalary', async(req,res)=>{
     res.send({average : Math.round(total/count)})
 })
 
-router.get('/averageSalaryByDepartment/:department', async(req,res)=>{
+app.get('/averageSalaryByDepartment/:department', async(req,res)=>{
     let department = req.params.department;
     let employeeData = readData();
     let total = 0;
@@ -224,7 +219,7 @@ router.get('/averageSalaryByDepartment/:department', async(req,res)=>{
     res.send({average : Math.round(total/count)})
 })
 
-// router.post('/dummy', async(req,res)=>{
+// app.post('/dummy', async(req,res)=>{
 //     const x = req.body;
 //     let arr = readData();
 //     let newarr = getUniqueDepartments(arr)
@@ -238,6 +233,6 @@ router.get('/averageSalaryByDepartment/:department', async(req,res)=>{
 // })
 
 
-app.use('/', router)
+// app.use('/', router)
 // module.exports.handler = serverless(app)
 app.listen(port,()=>{console.log("running....");})
