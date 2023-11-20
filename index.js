@@ -20,8 +20,7 @@ const corsOptions = {
 }
 app.options('*', cors(corsOptions));
 
-// const dataPath = "../data/employees.json"
-console.log(dataPath)
+// console.log(dataPath)
 function generateId(employees){
     let ids = employees.map(emp => emp.id)
     let empId = Math.max(...ids)
@@ -69,7 +68,7 @@ function criteriaSearch(key,value) {
             });
         } else {
             empData.forEach(element => {
-                console.log(element[key].toLowerCase(), value.toLowerCase());
+                // console.log(element[key].toLowerCase(), value.toLowerCase());
                 if (element[key].toLowerCase().startsWith(value.toLowerCase())) {
 
                     newEmpData.push(element);
@@ -82,7 +81,7 @@ function criteriaSearch(key,value) {
 }
 
 app.get('/filterCriteria', async(req,res)=>{
-    console.log(req.query);
+    // console.log(req.query);
     let key = req.query.key;
     let value = req.query.value;
     let newEmpData;
@@ -97,7 +96,7 @@ app.get('/filterCriteria', async(req,res)=>{
 //     res.send("app running...")
 // })
 
-app.get('/index', (req,res)=>{
+app.get('/', (req,res)=>{
     res.sendFile(path.join(__dirname, 'index.html'))
 })
 
@@ -123,7 +122,7 @@ app.get('/employee', async(req,res)=>{
 app.post('/addEmployee', async(req,res)=>{
 
     userData = req.body
-    console.log(userData)
+    // console.log(userData)
     if(!userData.fullname || !userData.department || !userData.dob || !userData.salary){
         return res.status(400).send({message:"Please enter all valid fields"})
     }
@@ -151,7 +150,7 @@ app.put('/editEmployee/:id', async(req,res)=>{
     const updateData = req.body;
     const updates = Object.keys(updateData)
     const allowed = ['fullname', 'department', 'salary', 'dob'];
-    console.log(req.body)
+    // console.log(req.body)
     const isValid = updates.every((update) => allowed.includes(update))
     if(!isValid)
         return res.status(400).send({message : "Enter valid Updates only"});
@@ -182,7 +181,7 @@ app.delete('/deleteEmployee/:id', async(req,res)=>{
     const id = req.params.id;
     let employeeData = readData()
     let index = employeeData.findIndex(emp => emp.id === parseInt(id));
-    console.log(index, id);
+    // console.log(index, id);
     if(index != -1){
         employeeData.splice(index, 1);
         writeData(employeeData)

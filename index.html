@@ -5,9 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Employee Management System</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous">
-
-    <script src= "https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"> 
-    </script> 
+    <script src= "https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script> 
   </head>
   <body>
     <div style="height: 100px;" class="bg-info"><h1 class="text-center my-3 py-3">Employee Management System</h1></div>
@@ -41,6 +39,20 @@
             <div class="col-md-2">
                 <button class="form-control btn btn-primary" id="idSearch">Search</button>
             </div>
+        </div>
+        <br>
+        <div class="row">
+          <h4>Bonus : </h4>
+          <div class="col-md-3" id="averageSalary">
+            The average salary of Employees is :
+          </div>
+          <div class="col-md-3" id ="averageSalaryByDepartment">
+            <select class="form-control" id="departmentAvg" name="departmentAvg">
+              <option value="" selected disabled>Select dept for average salary</option>
+            </select>
+          </div>
+          <div class="col-md-3" id="deptAvgValue">
+          </div>
         </div>
         <button id="addEmployeeBtn" type="button" style="display: flex;" class="btn btn-primary ms-auto mt-3" data-bs-toggle="modal" data-bs-target="#addEmployeeModal">
             Add Employee
@@ -109,8 +121,8 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-OERcA2EqjJCMA+/3y+gxIOqMEjwtxJY7qPCqsdltbNJuaOe923+mo//f6V8Qbsw3" crossorigin="anonymous"></script>
     <script>
-        const url = 'https://ems-presidio.onrender.com'
-        // const url = 'https://ems-snappedrat.netlify.app/.netlify/functions/api'
+        // const url = 'https://ems-presidio.onrender.com'
+        const url = 'http://localhost:3000'
 
 
         document.getElementById('addEmployeeBtn').addEventListener('click',function(event){
@@ -147,13 +159,13 @@
         })
         })
         .then(data => {
-        console.log('Employee added successfully:', data.message);
+        // console.log('Employee added successfully:', data.message);
         document.getElementById('addEmployee').reset()
         $('.btn-close').click();
         location.reload()
         })
         .catch(error => {
-        console.error('Error adding employee:', error);
+        // console.error('Error adding employee:', error);
         });
     });
 
@@ -162,7 +174,6 @@
         filterCriteriaSelect.addEventListener('change', updateFilterForm);
         function updateFilterForm() 
         {
-         
             const selectedCriteria = filterCriteriaSelect.value;
             filterValueContainer.innerHTML = '';
             if (selectedCriteria == 'salary' || selectedCriteria == 'age') {
@@ -184,6 +195,20 @@
             filterValueContainer.appendChild(minInput);
             filterValueContainer.appendChild(document.createTextNode(' to '));
             filterValueContainer.appendChild(maxInput);
+            }
+            else if(selectedCriteria == 'department'){
+              const selectElement = document.createElement('select');
+              selectElement.name = 'department';
+              selectElement.id = 'department';
+              selectElement.className = 'form-control';
+              const defaultOption = document.createElement('option');
+              defaultOption.value = '';
+              defaultOption.textContent = 'Select';
+              defaultOption.disabled = true;
+              selectElement.appendChild(defaultOption);
+
+              filterValueContainer.appendChild(selectElement);
+              selectUpdate('department')
             } 
             else {
             const singleInput = document.createElement('input');
@@ -207,7 +232,11 @@
                 const minValue = document.getElementById('minValue').value;
                 const maxValue = document.getElementById('maxValue').value;
                 filterValue = {min: minValue, max: maxValue};
-            } else {
+            } 
+            else if(filterCriteria == 'department'){
+                filterValue = document.getElementById('department').value;
+            }
+            else {
                 filterValue = document.getElementById('filterValue').value;
             } 
 
@@ -220,10 +249,38 @@
             })
             let val = await res.json();
             tableUpdate(val)
-            console.log(val);
+            // console.log(val);
         }
+        
+        document.getElementById('departmentAvg').addEventListener('change', averageSalaryByDepartment)
+        async function averageSalaryByDepartment()
+        {
+          let dept = document.getElementById('departmentAvg').value;
+          let res = await fetch(url+'/averageSalaryByDepartment/'+dept,
+            {
+                method : 'GET'
+            }
+            )
+          data = await res.json();
+          // console.log(data);
+          document.getElementById('deptAvgValue').innerHTML = "Average : "+data.average          
+        }
+
+        async function averageSalary(){
+          let res = await fetch(url+'/averageSalary',
+            {
+                method : 'GET'
+            }
+            )
+          data = await res.json();
+          // console.log(data);
+          document.getElementById('averageSalary').innerHTML+=data.average;
+
+        }
+
         const idSearch = document.getElementById('idSearch');
         idSearch.addEventListener('click', searchID);
+
         async function searchID(e){
             e.preventDefault();
 
@@ -234,8 +291,9 @@
             )
             const data = await res.json();   
             tableUpdate(data);
-            console.log(data);
+            // console.log(data);
         }
+
         async function getData(e){
             e.preventDefault();
             let res = await fetch(url+'/employees',
@@ -244,13 +302,15 @@
             }
             )
             const data = await res.json()
-            console.log(data);
+            // console.log(data);
             tableUpdate(data);
-            selectUpdate(); 
+            averageSalary();
+            selectUpdate('department'); 
+            selectUpdate('departmentAvg')
         } 
 
-        function selectUpdate(){
-        const departmentSelect = document.getElementById('department');
+        function selectUpdate(value){
+        const departmentSelect = document.getElementById(value);
         const departmentNames = [
             'Legal',
             'Sales',
@@ -294,7 +354,6 @@
                 deleteButton.className = "btn btn-danger btn-sm"
                 deleteButton.addEventListener('click', () => deleteEmployee(employee.id)); 
 
-                // Add buttons to the last cell
                 const actionsCell = row.insertCell(6);
                 actionsCell.appendChild(editButton);
                 actionsCell.appendChild(document.createTextNode(' '));
@@ -323,7 +382,7 @@
         })
         .then(data => {
             location.reload()
-            console.log(data.message)
+            // console.log(data.message)
         })
     }
     }
